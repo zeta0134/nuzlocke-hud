@@ -1,0 +1,66 @@
+Concept: A simple display-only tool for tracking
+Pokemon acquisitions and team changes during
+a nuzlocke run. Specifically tuned for that
+challenge, but ideally flexible enough to be
+useful for other purposes.
+
+Written in Love2D and the Lua language, for
+easier approachabilty by other programmers.
+
+Panes
+=====
+Party
+PC Box (Up to any number, configurable by user)
+Areas
+
+Pokemon
+=======
+- Number (entry, probably want to support multiple
+  numbering sets from each region)
+- Nickname
+- Status (Mostly Dead)
+- Derived Data fron Number:
+-- Icon
+-- Name (Original, Pidgey instead of BirdJesus)
+-- Type (Need to support type changes over series)
+
+Each Pokemon Icon can be fully edited. Except for
+derived data display, there are no rules and the
+player is in full control. For the number, simple
++ / - keys are provided to assist with evolution.
+This will not automatically handle things like
+special evolutions (Eevee) and I don't care to
+maintain it.
+
+Every single Pokemon slot can be moved around.
+
+Note: DO THIS FIRST. (Most useful thing.) Ignore
+region and just do Kanto numbering, and the
+original 151's icons for each creature. Don't hunt
+for GBA+ unique menu icons until later.
+
+Party
+=====
+Simply shows the 6 Pokemon in the party, nothing
+more. Highlights the first (and second, later)
+Pokemon to come out in a given battle, but has
+no other special features. Despite its simplicity,
+this will likely be the most used pane.
+
+Box
+===
+Similar to Party, displays less information for
+compactness. Original boxes hold up to 20 Pokemon,
+so we'll need to squeeze those onscreen somehow.
+Might need a scrolling / paging behavior for small
+windows, and this should probably be a user option
+
+Routes
+======
+Displays a shadow Pokemon entry for each route and
+area in a run. These areas should probably be
+set in advance for each type of run. "Moving" a
+Pokemon from another area into each route slot
+sets it for display. Each slot can also be
+disabled for various reasons (Missed a Pokemon,
+not used for this run, etc.)
