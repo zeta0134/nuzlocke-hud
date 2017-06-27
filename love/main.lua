@@ -101,6 +101,80 @@ local function draw_slot(slot, x, y, mx, my)
   end
 end
 
+local editor = {}
+editor.active = false
+editor.index = 0
+editor.field = ""
+editor.x = 0
+editor.y = 0
+editor.value = ""
+editor.numeric = false
+editor.max_length = 10
+
+local function save_edit()
+  if editor.numeric then
+    pokemon[editor.index][editor.field] = tonumber(editor.value)
+  else
+    if editor.value == "" then
+      pokemon[editor.index][editor.field] = nil
+    else
+      pokemon[editor.index][editor.field] = editor.value
+    end
+  end
+  editor.active = false
+end
+
+local function abandon_edit()
+  editor.active = false
+end
+
+local function begin_edit(index, fieldname, x, y, max_length, numeric)
+  if editor.active then
+    save_edit()
+  end
+  editor.active = true
+  editor.index = index
+  editor.field = fieldname
+  editor.x = x
+  editor.y = y
+  editor.max_length = max_length
+  editor.numeric = numeric
+  editor.value = tostring(pokemon[editor.index][editor.field] or "")
+end
+
+local function draw_editor()
+  love.graphics.setColor(unpack(gb_palette[2]))
+  love.graphics.rectangle("fill", editor.x, editor.y, 12 * 8, 8)
+  love.graphics.setColor(unpack(gb_palette[0]))
+  love.graphics.print(editor.value, editor.x, editor.y)
+  love.graphics.setColor(unpack(gb_palette[0]))
+  love.graphics.rectangle("fill", editor.x + (8 * #editor.value) + 1, editor.y, 1, 8)
+end
+
+local function editor_handle_char(char)
+  if editor.numeric then
+    if char < "0" or char > "9" then
+      return
+    end
+  end
+
+  if #editor.value < editor.max_length then
+    editor.value = editor.value .. char
+  end
+end
+
+local function editor_handle_key(key)
+  if key == "backspace" and #editor.value > 0 then
+    editor.value = string.sub(editor.value, 1, #editor.value - 1)
+  end
+  if key == "return" then
+    save_edit()
+  end
+  if key == "escape" then
+    abandon_edit()
+  end
+end
+
 local function slot_clicked(slot, mx, my)
   if slot.status == "empty" then
     if slot.pokemon == nil then
@@ -108,6 +182,19 @@ local function slot_clicked(slot, mx, my)
       slot.pokemon = #pokemon
     end
     slot.status = "alive"
+    return
+  end
+
+  if slot.status == "alive" then
+    if mx > 32 and mx < slot.width and
+       my > 0 and my < 8 then
+      begin_edit(slot.pokemon, "nickname", slot.x + 32, slot.y + 0, 10, false)
+    end
+  end
+
+  if mx > 32 and mx < slot.width and
+     my > 16 and my < 24 then
+    begin_edit(slot.pokemon, "species", slot.x + 32, slot.y + 16, 3, true)
   end
 end
 
@@ -168,6 +255,9 @@ function love.draw()
     love.graphics.setColor(unpack(gb_palette[0]))
     love.graphics.print("====== PARTY ======", 0, 0)
     draw_party(mx, my)
+    if editor.active then
+      draw_editor()
+    end
 
     love.graphics.setCanvas()
     love.graphics.setColor(255, 255, 255)
@@ -181,4 +271,16 @@ function love.mousereleased()
 
   -- todo: handle drag / drop here
   party_clicked(mx, my)
+end
+
+function love.textinput(text)
+  if editor.active then
+    editor_handle_char(text)
+  end
+end
+
+function love.keypressed(key)
+  if editor.active then
+    editor_handle_key(key)
+  end
 end
