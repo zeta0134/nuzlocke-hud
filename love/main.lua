@@ -1,3 +1,9 @@
+local gb_palette = {}
+gb_palette[0] = {0,   0,   0  }
+gb_palette[1] = {128, 128, 128}
+gb_palette[2] = {192, 192, 192}
+gb_palette[3] = {248, 248, 248}
+
 local sprites = {}
 local function load_sprite(name)
   local path = "images/" .. name .. ".png"
@@ -59,17 +65,20 @@ local function draw_slot(slot, x, y)
     pokedex_data = pokedex[slot.pokemon.species] or pokedex[0]
     if pokedex_data.rby_icon then
       local icon_path = "rby/" .. pokedex_data.rby_icon
-      love.graphics.setColor(192, 192, 192)
-      love.graphics.circle("fill", x + 12, y + 12, 12)
+      love.graphics.setColor(unpack(gb_palette[2]))
+      love.graphics.circle("fill", x + 12, y + 12, 11)
       love.graphics.setColor(255, 255, 255)
       draw_sprite(icon_path, x + 4, y + 4, 16, 16)
     end
 
     if slot.pokemon.nickname then
+      love.graphics.setColor(unpack(gb_palette[0]))
       love.graphics.print(slot.pokemon.nickname, x + 32, y + 0)
-      love.graphics.print(pokedex_data.name, x + 32, y + 8)
+      love.graphics.setColor(unpack(gb_palette[1]))
+      love.graphics.print(string.upper(pokedex_data.name), x + 32, y + 8)
     else
-      love.graphics.print(pokedex_data.name, x + 32, y + 0)
+      love.graphics.setColor(unpack(gb_palette[0]))
+      love.graphics.print(string.upper(pokedex_data.name), x + 32, y + 0)
     end
 
     local types = ""
@@ -77,8 +86,9 @@ local function draw_slot(slot, x, y)
       types = types .. string.upper(pokedex_data.type1)
     end
     if pokedex_data.type2 then
-      types = types .. " / " .. string.upper(pokedex_data.type2)
+      types = types .. "/" .. string.upper(pokedex_data.type2)
     end
+    love.graphics.setColor(unpack(gb_palette[0]))
     love.graphics.print(types, x + 32, y + 16)
   end
 end
@@ -94,7 +104,7 @@ end
 
 function draw_party()
   for i = 1, 6 do
-    draw_slot(party[i], 0, 32 * i)
+    draw_slot(party[i], 8, 32 * (i - 1) + 16)
   end
 end
 
@@ -108,7 +118,15 @@ party[2].status  = "alive"
 party[3].pokemon = Pokemon.new(7)
 party[3].status  = "alive"
 
+function love.load()
+  local rby_font = love.graphics.newImageFont("images/rby_font.png", " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz():;[]?!0123456789./,@#$= ", 0)
+  love.graphics.setFont(rby_font)
+  love.window.setMode(8 * 19, 32 * 7)
+end
+
 function love.draw()
-    love.graphics.print("Hello World", 400, 300)
+    love.graphics.clear(unpack(gb_palette[3]))
+    love.graphics.setColor(unpack(gb_palette[0]))
+    love.graphics.print("====== PARTY ======")
     draw_party()
 end
