@@ -47,30 +47,24 @@ local Pokemon = {
   end
 }
 
+local pokemon = {}
+pokemon[0] = Pokemon.new(0)
+
 local PokemonSlot = {
   new=function()
-    local slot = {x=0,y=0,pokemon=nil,status="empty"}
+    local slot = {x=0,y=0,width=128,height=24,pokemon=nil,status="empty"}
     return slot
   end
 }
 
-local pokemon = {}
-pokemon[0] = Pokemon.new(0)
-
-local function draw_slot(slot, x, y)
-  local mx, my = love.mouse.getPosition()
-  mx = mx / 2 - x
-  my = my / 2 - y
-
-  local slot_width = 32 + 12 * 8
-  local slot_height = 3 * 8
+local function draw_slot(slot, x, y, mx, my)
 
   if slot.status == "empty" then
-    if mx > 0 and mx < slot_width and my > 0 and my < slot_height then
+    if mx > 0 and mx < slot.width and my > 0 and my < slot.height then
       love.graphics.setColor(unpack(gb_palette[2]))
-      love.graphics.rectangle("fill", x, y, slot_width, slot_height)
+      love.graphics.rectangle("fill", x, y, slot.width, slot.height)
       love.graphics.setColor(unpack(gb_palette[0]))
-      love.graphics.print("Add", x + (slot_width / 2) - (3 * 4), y + 8)
+      love.graphics.print("Add", x + (slot.width / 2) - (3 * 4), y + 8)
     end
   end
 
@@ -107,18 +101,37 @@ local function draw_slot(slot, x, y)
   end
 end
 
-local function click_slot(slot, mx, my)
-
+local function slot_clicked(slot, mx, my)
+  if slot.status == "empty" then
+    if slot.pokemon == nil then
+      table.insert(pokemon, Pokemon.new(0))
+      slot.pokemon = #pokemon
+    end
+    slot.status = "alive"
+  end
 end
 
 local party = {}
 for i = 1, 6 do
   party[i] = PokemonSlot.new()
+  party[i].x = 8
+  party[i].y = 32 * (i - 1) + 16
 end
 
-function draw_party()
+function draw_party(mx, my)
   for i = 1, 6 do
-    draw_slot(party[i], 8, 32 * (i - 1) + 16)
+    local slot = party[i]
+    draw_slot(slot, slot.x, slot.y, mx - slot.x, my - slot.y)
+  end
+end
+
+function party_clicked(mx, my)
+  for i = 1, 6 do
+    local slot = party[i]
+    if mx > slot.x and mx < slot.x + slot.width and
+       my > slot.y and my < slot.y + slot.height then
+      slot_clicked(slot, mx - slot.x, my - slot.y)
+    end
   end
 end
 
@@ -146,12 +159,26 @@ function love.load()
 end
 
 function love.draw()
+    local mx, my = love.mouse.getPosition()
+    mx = mx / 2
+    my = my / 2
+
     love.graphics.setCanvas(main_canvas)
     love.graphics.clear(unpack(gb_palette[3]))
     love.graphics.setColor(unpack(gb_palette[0]))
     love.graphics.print("====== PARTY ======", 0, 0)
-    draw_party()
+    draw_party(mx, my)
+
     love.graphics.setCanvas()
     love.graphics.setColor(255, 255, 255)
     love.graphics.draw(main_canvas, 0, 0, 0, 2, 2)
+end
+
+function love.mousereleased()
+  local mx, my = love.mouse.getPosition()
+  mx = mx / 2
+  my = my / 2
+
+  -- todo: handle drag / drop here
+  party_clicked(mx, my)
 end
