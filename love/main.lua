@@ -1,6 +1,6 @@
 local gb_palette = {}
 gb_palette[0] = {0,   0,   0  }
-gb_palette[1] = {128, 128, 128}
+gb_palette[1] = {96,  96,  96 }
 gb_palette[2] = {192, 192, 192}
 gb_palette[3] = {248, 248, 248}
 
@@ -55,14 +55,28 @@ local PokemonSlot = {
 }
 
 local pokemon = {}
+pokemon[0] = Pokemon.new(0)
 
 local function draw_slot(slot, x, y)
+  local mx, my = love.mouse.getPosition()
+  mx = mx / 2 - x
+  my = my / 2 - y
+
+  local slot_width = 32 + 12 * 8
+  local slot_height = 3 * 8
+
   if slot.status == "empty" then
-    -- for RBY, do absolutely nothing
-    return
+    if mx > 0 and mx < slot_width and my > 0 and my < slot_height then
+      love.graphics.setColor(unpack(gb_palette[2]))
+      love.graphics.rectangle("fill", x, y, slot_width, slot_height)
+      love.graphics.setColor(unpack(gb_palette[0]))
+      love.graphics.print("Add", x + (slot_width / 2) - (3 * 4), y + 8)
+    end
   end
+
   if slot.status == "alive" then
-    pokedex_data = pokedex[slot.pokemon.species] or pokedex[0]
+    local pokemon = pokemon[slot.pokemon] or pokemon[0]
+    local pokedex_data = pokedex[pokemon.species] or pokedex[0]
     if pokedex_data.rby_icon then
       local icon_path = "rby/" .. pokedex_data.rby_icon
       love.graphics.setColor(unpack(gb_palette[2]))
@@ -71,13 +85,13 @@ local function draw_slot(slot, x, y)
       draw_sprite(icon_path, x + 4, y + 4, 16, 16)
     end
 
-    if slot.pokemon.nickname then
-      love.graphics.setColor(unpack(gb_palette[0]))
-      love.graphics.print(slot.pokemon.nickname, x + 32, y + 0)
+    if pokemon.nickname then
       love.graphics.setColor(unpack(gb_palette[1]))
-      love.graphics.print(string.upper(pokedex_data.name), x + 32, y + 8)
+      love.graphics.print(pokemon.nickname, x + 32, y + 0)
+      love.graphics.setColor(unpack(gb_palette[2]))
+      love.graphics.print(string.upper(pokedex_data.name), x + 32, y + 16)
     else
-      love.graphics.setColor(unpack(gb_palette[0]))
+      love.graphics.setColor(unpack(gb_palette[1]))
       love.graphics.print(string.upper(pokedex_data.name), x + 32, y + 0)
     end
 
@@ -89,7 +103,7 @@ local function draw_slot(slot, x, y)
       types = types .. "/" .. string.upper(pokedex_data.type2)
     end
     love.graphics.setColor(unpack(gb_palette[0]))
-    love.graphics.print(types, x + 32, y + 16)
+    love.graphics.print(types, x + 32, y + 8)
   end
 end
 
@@ -109,24 +123,35 @@ function draw_party()
 end
 
 -- setup a DEBUG party (todo: not this)
-party[1].pokemon = Pokemon.new(1, "Harry")
+pokemon[1] = Pokemon.new(1, "Steven")
+party[1].pokemon = 1
 party[1].status  = "alive"
 
-party[2].pokemon = Pokemon.new(4, "Fred")
+pokemon[2] = Pokemon.new(6, "Garnet")
+party[2].pokemon = 2
 party[2].status  = "alive"
 
-party[3].pokemon = Pokemon.new(7)
+pokemon[3] = Pokemon.new(7)
+party[3].pokemon = 3
 party[3].status  = "alive"
+
+local main_canvas
 
 function love.load()
   local rby_font = love.graphics.newImageFont("images/rby_font.png", " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz():;[]?!0123456789./,@#$= ", 0)
   love.graphics.setFont(rby_font)
-  love.window.setMode(8 * 19, 32 * 7)
+  love.window.setMode(8 * 19 * 2, 32 * 7 * 2)
+  love.graphics.setDefaultFilter("nearest", "nearest")
+  main_canvas = love.graphics.newCanvas()
 end
 
 function love.draw()
+    love.graphics.setCanvas(main_canvas)
     love.graphics.clear(unpack(gb_palette[3]))
     love.graphics.setColor(unpack(gb_palette[0]))
-    love.graphics.print("====== PARTY ======")
+    love.graphics.print("====== PARTY ======", 0, 0)
     draw_party()
+    love.graphics.setCanvas()
+    love.graphics.setColor(255, 255, 255)
+    love.graphics.draw(main_canvas, 0, 0, 0, 2, 2)
 end
