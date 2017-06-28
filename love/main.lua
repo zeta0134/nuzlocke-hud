@@ -1,42 +1,11 @@
+local pokedex = require("pokedex")
+local sprites = require("sprites")
+
 local gb_palette = {}
 gb_palette[0] = {0,   0,   0  }
 gb_palette[1] = {96,  96,  96 }
 gb_palette[2] = {192, 192, 192}
 gb_palette[3] = {248, 248, 248}
-
-local sprites = {}
-local function load_sprite(name)
-  local path = "images/" .. name .. ".png"
-  if love.filesystem.exists(path) then
-    sprites[name] = love.graphics.newImage(path)
-  end
-end
-load_sprite("error")
-
-local function draw_sprite(name, x, y, width, height)
-  -- check to see if this sprite is loaded, and
-  -- load it on the fly if it's not
-  if sprites[name] == nil then
-    load_sprite(name)
-  end
-  local sprite = sprites[name] or sprites["error"]
-  local radians = 0
-  local sx = width / sprite:getWidth()
-  local xy = height / sprite:getHeight()
-  love.graphics.draw(sprite, x, y, radians, sx, sy)
-end
-
-local pokedex = {}
-pokedex[000] = {name="MissingNo.", type1=nil,     type2=nil,      rby_icon=nil}
-pokedex[001] = {name="Bulbasaur",  type1="grass", type2="poison", rby_icon="plant"}
-pokedex[002] = {name="Ivysaur",    type1="grass", type2="poison", rby_icon="plant"}
-pokedex[003] = {name="Venusaur",   type1="grass", type2="poison", rby_icon="plant"}
-pokedex[004] = {name="Charmander", type1="fire",  type2=nil,      rby_icon="biped"}
-pokedex[005] = {name="Charmeleon", type1="fire",  type2=nil,      rby_icon="biped"}
-pokedex[006] = {name="Charizard",  type1="fire",  type2="flying", rby_icon="biped"}
-pokedex[007] = {name="Squirtle",   type1="water", type2=nil,      rby_icon="water"}
-pokedex[008] = {name="Wartortle",  type1="water", type2=nil,      rby_icon="water"}
-pokedex[009] = {name="Blastoise",  type1="water", type2=nil,      rby_icon="water"}
 
 local Pokemon = {
   new=function(species, nickname)
@@ -76,7 +45,7 @@ local function draw_slot(slot, x, y, mx, my)
       love.graphics.setColor(unpack(gb_palette[2]))
       love.graphics.circle("fill", x + 12, y + 12, 11)
       love.graphics.setColor(255, 255, 255)
-      draw_sprite(icon_path, x + 4, y + 4, 16, 16)
+      sprites.draw(icon_path, x + 4, y + 4, 16, 16)
     end
 
     if pokemon.nickname then
