@@ -1,3 +1,9 @@
+-- Author's credit: All data and names copyright
+-- Nintendo and Game Freak, usage here assumed to
+-- be fair use. Data collected from serebii.net,
+-- widely considered to be the authority on
+-- Pokemon info and statistics.
+
 local pokedex = {}
 pokedex[000] = {name="MissingNo.", type1=nil,        type2=nil,        rby_icon=nil}
 pokedex[001] = {name="Bulbasaur",  type1="grass",    type2="poison",   rby_icon="plant"}
