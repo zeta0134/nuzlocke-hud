@@ -303,7 +303,7 @@ function love.mousemoved(mx, my)
   if mouse_pressed then
     -- Implement a threshold for dragging, so clicks aren't recognized as drags
     -- unless we actually move the mouse a little bit.
-    if drag_slot ~= nil and distance(mx, my, mouse_start.x, mouse_start.y) > 5 then
+    if drag_slot ~= nil and distance(mouse_current.x, mouse_current.y, mouse_start.x, mouse_start.y) > 5 then
       drag_active = true
     end
   end
