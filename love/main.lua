@@ -26,6 +26,28 @@ local PokemonSlot = {
   end
 }
 
+local function point_inside_slot(slot, x, y)
+  x = x - slot.x
+  y = y - slot.y
+  return x > 0 and x < slot.width and y > 0 and y < slot.height
+end
+
+local function move_slot(source, destination)
+  local temp_pokemon = destination.pokemon
+  local temp_status = destination.status
+
+  destination.pokemon = source.pokemon
+  destination.status = source.status
+
+  if temp_status == "empty" then
+    source.status = "empty"
+    source.pokemon = nil
+  else
+    source.status = temp_status
+    source.pokemon = temp_pokemon
+  end
+end
+
 local function draw_slot(slot, x, y, mx, my)
 
   if slot.status == "empty" then
@@ -174,6 +196,8 @@ for i = 1, 6 do
   party[i].y = 32 * (i - 1) + 16
 end
 
+local active_layout = party
+
 function draw_party(mx, my)
   for i = 1, 6 do
     local slot = party[i]
@@ -191,20 +215,8 @@ function party_clicked(mx, my)
   end
 end
 
--- setup a DEBUG party (todo: not this)
-pokemon[1] = Pokemon.new(1, "Steven")
-party[1].pokemon = 1
-party[1].status  = "alive"
-
-pokemon[2] = Pokemon.new(6, "Garnet")
-party[2].pokemon = 2
-party[2].status  = "alive"
-
-pokemon[3] = Pokemon.new(7)
-party[3].pokemon = 3
-party[3].status  = "alive"
-
 local main_canvas
+local drag_ghost
 
 function love.load()
   local rby_font = love.graphics.newImageFont("images/rby_font.png", " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz():;[]?!0123456789./,@#$= ", 0)
@@ -212,7 +224,17 @@ function love.load()
   love.window.setMode(8 * 19 * 2, 32 * 7 * 2)
   love.graphics.setDefaultFilter("nearest", "nearest")
   main_canvas = love.graphics.newCanvas()
+  drag_ghost = love.graphics.newCanvas()
+
+  print("STUFF?????")
 end
+
+local mouse_start = {x=0, y=0}
+local mouse_current = {x=0, y=0}
+local mouse_pressed = false
+local drag_slot = nil
+local drag_active = false
+local drag_offset = {x=0, y=0}
 
 function love.draw()
     local mx, my = love.mouse.getPosition()
@@ -228,18 +250,83 @@ function love.draw()
       draw_editor()
     end
 
+    if drag_active then
+      -- Draw a ghost of the thing we're dragging
+      love.graphics.setCanvas(drag_ghost)
+      love.graphics.clear(255, 255, 255, 0)
+      -- a drop shadow, and a background rectangle
+      love.graphics.setColor(0, 0, 0, 128)
+      love.graphics.rectangle("fill", 2, 2, drag_slot.width, drag_slot.height)
+      love.graphics.setColor(unpack(gb_palette[3]))
+      love.graphics.rectangle("fill", 0, 0, drag_slot.width, drag_slot.height)
+
+      draw_slot(drag_slot, 0, 0, -1, -1)
+      love.graphics.setCanvas(main_canvas)
+      love.graphics.setColor(255, 255, 255)
+      local dx = math.floor(mouse_current.x - drag_offset.x)
+      local dy = math.floor(mouse_current.y - drag_offset.y)
+      love.graphics.draw(drag_ghost, dx, dy)
+      love.graphics.setColor(255, 255, 255)
+    end
+
     love.graphics.setCanvas()
     love.graphics.setColor(255, 255, 255)
     love.graphics.draw(main_canvas, 0, 0, 0, 2, 2)
 end
 
-function love.mousereleased()
-  local mx, my = love.mouse.getPosition()
+function love.mousepressed(mx, my)
+  mouse_start.x = mx / 2
+  mouse_start.y = my / 2
+
+  drag_slot = nil
+  for i = 1, #active_layout do
+    if point_inside_slot(active_layout[i], mouse_start.x, mouse_start.y) and active_layout[i].status ~= "empty" then
+      drag_slot = active_layout[i]
+      drag_offset.x = mouse_start.x - drag_slot.x
+      drag_offset.y = mouse_start.y - drag_slot.y
+    end
+  end
+
+  mouse_pressed = true
+end
+
+local function distance(x1, y1, x2, y2)
+  dx = x2 - x1
+  dy = y2 - y1
+  return math.sqrt(dx * dx + dy * dy)
+end
+
+function love.mousemoved(mx, my)
+  mouse_current.x = mx / 2
+  mouse_current.y = my / 2
+
+  if mouse_pressed then
+    -- Implement a threshold for dragging, so clicks aren't recognized as drags
+    -- unless we actually move the mouse a little bit.
+    if drag_slot ~= nil and distance(mx, my, mouse_start.x, mouse_start.y) > 5 then
+      drag_active = true
+    end
+  end
+end
+
+function love.mousereleased(mx, my)
   mx = mx / 2
   my = my / 2
 
   -- todo: handle drag / drop here
-  party_clicked(mx, my)
+  if drag_active then
+    for i = 1, #active_layout do
+      if point_inside_slot(active_layout[i], mx, my) then
+        move_slot(drag_slot, active_layout[i])
+      end
+    end
+  else
+    party_clicked(mx, my)
+  end
+
+  drag_active = false
+  drag_slot = nil
+  mouse_pressed = false
 end
 
 function love.textinput(text)
