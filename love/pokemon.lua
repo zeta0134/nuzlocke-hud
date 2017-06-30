@@ -57,15 +57,30 @@ pokemon.draw_slot = function(slot, x, y, mx, my)
     end
   end
 
-  if slot.status == "alive" then
+  if slot.status == "missed" then
+    love.graphics.setColor(unpack(palette.gb[2]))
+    love.graphics.circle("fill", x + 12, y + 12, 11)
+    love.graphics.setColor(255, 255, 255)
+    local icon_path = "rby/missed"
+    sprites.draw(icon_path, x + 4, y + 4, 16, 16)
+    love.graphics.setColor(unpack(palette.gb[2]))
+    love.graphics.print("Missed...", x + 32, y + 8)
+  end
+
+  if slot.status == "alive" or slot.status == "dead" then
     local pokemon = pokemon.collection[slot.pokemon] or pokemon.collection[0]
     local pokedex_data = pokedex[pokemon.species] or pokedex[0]
-    if pokedex_data.rby_icon then
-      local icon_path = "rby/" .. pokedex_data.rby_icon
-      love.graphics.setColor(unpack(palette.gb[2]))
-      love.graphics.circle("fill", x + 12, y + 12, 11)
-      love.graphics.setColor(255, 255, 255)
+    love.graphics.setColor(unpack(palette.gb[2]))
+    love.graphics.circle("fill", x + 12, y + 12, 11)
+    love.graphics.setColor(255, 255, 255)
+    if slot.status == "dead" then
+      local icon_path = "rby/dead"
       sprites.draw(icon_path, x + 4, y + 4, 16, 16)
+    else
+      if pokedex_data.rby_icon then
+        local icon_path = "rby/" .. pokedex_data.rby_icon
+        sprites.draw(icon_path, x + 4, y + 4, 16, 16)
+      end
     end
 
     if pokemon.nickname then
@@ -110,6 +125,19 @@ pokemon.slot_clicked = function(slot, mx, my)
   if mx > 32 and mx < slot.width and
      my > 16 and my < 24 then
     editor.begin(pokemon.collection, slot.pokemon, "species", slot.x + 32, slot.y + 16, 3, true)
+  end
+
+  -- If we clicked on the portrait, cycle through the available statuses
+  if slot.status ~= "empty" then
+    if mx > 0 and mx < 32 then
+      if slot.status == "alive" then
+        slot.status = "dead"
+      elseif slot.status == "dead" then
+        slot.status = "missed"
+      elseif slot.status == "missed" then
+        slot.status = "empty"
+      end
+    end
   end
 end
 
