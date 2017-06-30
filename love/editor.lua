@@ -69,7 +69,7 @@ editor.handle_key = function(key)
   if key == "backspace" and #editor.value > 0 then
     editor.value = string.sub(editor.value, 1, #editor.value - 1)
   end
-  if key == "return" then
+  if key == "return" or key == "kpenter" then
     editor.save()
   end
   if key == "escape" then
