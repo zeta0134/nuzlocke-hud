@@ -225,8 +225,6 @@ function love.load()
   love.graphics.setDefaultFilter("nearest", "nearest")
   main_canvas = love.graphics.newCanvas()
   drag_ghost = love.graphics.newCanvas()
-
-  print("STUFF?????")
 end
 
 local mouse_start = {x=0, y=0}
