@@ -86,7 +86,7 @@ pokemon.draw_slot = function(slot, x, y, mx, my)
     if pokemon.nickname then
       love.graphics.setColor(unpack(palette.gb[1]))
       love.graphics.print(pokemon.nickname, x + 32, y + 0)
-      love.graphics.setColor(unpack(palette.gb[2]))
+      love.graphics.setColor(unpack(palette.gb[1]))
       love.graphics.print(string.upper(pokedex_data.name), x + 32, y + 16)
     else
       love.graphics.setColor(unpack(palette.gb[1]))

@@ -2,11 +2,18 @@ local editor = require("editor")
 local palette = require("palette")
 local pokemon = require("pokemon")
 
+local screen_width = 38 * 8
+
 local party = {}
-for i = 1, 6 do
-  party[i] = pokemon.Slot.new()
-  party[i].x = 8
-  party[i].y = 32 * (i - 1) + 16
+local column_width = screen_width / 2
+local row_height = 32
+for x = 0, 1 do
+  for y = 0, 2 do
+    local i = (x * 3 + y) + 1
+    party[i] = pokemon.Slot.new()
+    party[i].x = x * column_width + 8
+    party[i].y = row_height * y + 16
+  end
 end
 
 local active_layout = party
@@ -34,7 +41,7 @@ local drag_ghost
 function love.load()
   local rby_font = love.graphics.newImageFont("images/rby_font.png", " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz():;[]?!0123456789./,@#$= ", 0)
   love.graphics.setFont(rby_font)
-  love.window.setMode(8 * 19 * 2, 32 * 7 * 2)
+  love.window.setMode(8 * 38 * 2, 32 * 4 * 2)
   love.graphics.setDefaultFilter("nearest", "nearest")
   main_canvas = love.graphics.newCanvas()
   drag_ghost = love.graphics.newCanvas()
@@ -55,7 +62,7 @@ function love.draw()
     love.graphics.setCanvas(main_canvas)
     love.graphics.clear(unpack(palette.gb[3]))
     love.graphics.setColor(unpack(palette.gb[0]))
-    love.graphics.print("====== PARTY ======", 0, 0)
+    love.graphics.print("================ PARTY ===============", 0, 0)
     draw_party(mx, my)
     if editor.active then
       editor.draw()
