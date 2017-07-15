@@ -1,5 +1,7 @@
+local csv = require("csv")
 local editor = require("editor")
 local palette = require("palette")
+local pokedex = require("pokedex")
 local pokemon = require("pokemon")
 
 local screen_width = 38 * 8
@@ -156,5 +158,11 @@ end
 function love.keypressed(key)
   if editor.active then
     editor.handle_key(key)
+  else
+    if key == "s" then
+      love.filesystem.write("pokedex.csv", csv.encode(pokedex))
+      love.filesystem.write("pokemon.csv", csv.encode(pokemon.collection))
+      love.filesystem.write("party.csv", csv.encode(party))
+    end
   end
 end
