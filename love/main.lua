@@ -164,5 +164,9 @@ function love.keypressed(key)
       love.filesystem.write("pokemon.csv", csv.encode(pokemon.collection))
       love.filesystem.write("party.csv", csv.encode(party))
     end
+    if key == "l" then
+      pokemon.collection = csv.decode(love.filesystem.read("pokemon.csv"))
+      party = csv.decode(love.filesystem.read("party.csv"))
+    end
   end
 end
